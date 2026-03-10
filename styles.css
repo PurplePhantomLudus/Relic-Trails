@@ -1,0 +1,46 @@
+:root {
+    --bg: #1a1a1a; --card: #2c3e50; --text: #ecf0f1;
+    --yellow: #f1c40f; --blue: #2980b9; --white: #ecf0f1;
+    --green: #27ae60; --red: #c0392b; --purple: #8e44ad;
+}
+
+body {
+    font-family: 'Lato', sans-serif; background: var(--bg); color: var(--text);
+    margin: 0; padding: 0; display: flex; justify-content: center;
+}
+
+.pantalla { display: none; width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box; }
+.pantalla.activa { display: block; animation: fadeIn 0.5s; }
+
+h1, h2 { font-family: 'Cinzel', serif; text-align: center; margin-bottom: 10px; }
+
+.card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+
+.grupo-input { margin-bottom: 15px; }
+input { width: 100%; padding: 10px; border-radius: 5px; border: none; font-size: 16px; box-sizing: border-box; }
+
+.botones-seleccion { display: flex; gap: 10px; margin-top: 10px; }
+.btn-opcion { flex: 1; padding: 10px; border: 1px solid var(--text); background: transparent; color: var(--text); border-radius: 5px; cursor: pointer; }
+.btn-opcion.seleccionado { background: var(--text); color: var(--bg); font-weight: bold; }
+
+.btn-principal { width: 100%; padding: 15px; background: #e67e22; border: none; color: white; border-radius: 10px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+
+.expedicion-row { 
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+    padding: 10px; border-radius: 8px; margin-bottom: 10px; align-items: center;
+}
+.expedicion-row label { font-weight: bold; text-shadow: 1px 1px 2px black; }
+.expedicion-row input { text-align: center; padding: 5px; }
+
+/* Colores de las Fuentes */
+.yellow { background-color: var(--yellow); color: #000; }
+.blue { background-color: var(--blue); }
+.white { background-color: var(--white); color: #000; }
+.green { background-color: var(--green); }
+.red { background-color: var(--red); }
+.purple { background-color: var(--purple); }
+
+.tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.tabla-resumen th, .tabla-resumen td { padding: 10px; border-bottom: 1px solid #444; text-align: center; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
