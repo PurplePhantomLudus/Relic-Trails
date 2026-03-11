@@ -1,21 +1,17 @@
-const CACHE_NAME="lostcities-v1"
+const CACHE="relic-trails-v1"
 
-const urls=[
-
+const FILES=[
 "/",
 "/index.html",
 "/styles.css",
 "/app.js"
-
 ]
 
 self.addEventListener("install",e=>{
 
 e.waitUntil(
-
-caches.open(CACHE_NAME)
-.then(cache=>cache.addAll(urls))
-
+caches.open(CACHE)
+.then(cache=>cache.addAll(FILES))
 )
 
 })
@@ -23,10 +19,8 @@ caches.open(CACHE_NAME)
 self.addEventListener("fetch",e=>{
 
 e.respondWith(
-
 caches.match(e.request)
-.then(r=>r || fetch(e.request))
-
+.then(res=>res || fetch(e.request))
 )
 
 })

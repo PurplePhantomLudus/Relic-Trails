@@ -6,10 +6,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Lost Cities Score</title>
+<title>Relic Trails</title>
 
 <link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.json">
+
+<script src="app.js" defer></script>
 
 </head>
 
@@ -19,28 +21,30 @@
 
 <img src="assets/welcome/welcome.jpg" class="welcome">
 
-<h1>Lost Cities Score</h1>
+<h1>Relic Trails</h1>
 
-<button onclick="showSetup()">Continuar</button>
+<p>Track your expedition scores and discover the greatest explorer.</p>
+
+<button id="btnContinue">Start Expedition</button>
 
 </div>
 
 <div id="setup" class="screen hidden">
 
-<h2>Configuración</h2>
+<h2>Prepare the Expedition</h2>
 
-<input id="player1" placeholder="Jugador 1">
+<input id="player1" placeholder="Explorer 1">
 
-<input id="player2" placeholder="Jugador 2">
+<input id="player2" placeholder="Explorer 2 (optional)">
 
-<h3>Expediciones</h3>
+<h3>Number of Expeditions</h3>
 
 <select id="expeditions">
-<option value="5">5 expediciones</option>
-<option value="6">6 expediciones</option>
+<option value="5">5 Expeditions</option>
+<option value="6">6 Expeditions</option>
 </select>
 
-<button onclick="startGame()">Iniciar partida</button>
+<button id="btnStart">Begin Journey</button>
 
 </div>
 
@@ -48,36 +52,33 @@
 
 <h2 id="roundTitle"></h2>
 
-<div id="playerTurn"></div>
+<h3 id="playerTurn"></h3>
 
 <div id="board"></div>
 
-<button onclick="finishTurn()">Finalizar turno</button>
+<button id="btnFinishTurn">Calculate Expedition</button>
 
 </div>
 
 <div id="roundResult" class="screen hidden">
 
-<h2>Resultado de la ronda</h2>
+<h2>Round Results</h2>
 
 <div id="roundScores"></div>
 
-<button onclick="nextRound()">Siguiente ronda</button>
+<button id="btnNextRound">Next Round</button>
 
 </div>
 
 <div id="finalResult" class="screen hidden">
 
-<h2>Resultado final</h2>
+<h2>Final Expedition Results</h2>
 
 <div id="finalScores"></div>
 
-<button onclick="restart()">Nueva partida</button>
+<button id="btnRestart">New Game</button>
 
 </div>
 
-<script src="app.js"></script>
-
 </body>
-
 </html>

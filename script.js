@@ -4,10 +4,28 @@ let round=1
 let expeditions=5
 
 let totals=[0,0]
-
-const colors=["red","blue","green","yellow","white","purple"]
+let roundScores=[0,0]
 
 const values=["W","W","W",2,3,4,5,6,7,8,9,10]
+
+document.addEventListener("DOMContentLoaded", ()=>{
+
+document.getElementById("btnContinue")
+.addEventListener("click", showSetup)
+
+document.getElementById("btnStart")
+.addEventListener("click", startGame)
+
+document.getElementById("btnFinishTurn")
+.addEventListener("click", finishTurn)
+
+document.getElementById("btnNextRound")
+.addEventListener("click", nextRound)
+
+document.getElementById("btnRestart")
+.addEventListener("click", restart)
+
+})
 
 function show(id){
 
@@ -19,21 +37,26 @@ document.getElementById(id).classList.remove("hidden")
 }
 
 function showSetup(){
-
 show("setup")
-
 }
 
 function startGame(){
 
-players=[
-document.getElementById("player1").value || "Jugador 1",
-document.getElementById("player2").value || "Jugador 2"
-]
+const p1=document.getElementById("player1").value || "Explorer 1"
+const p2=document.getElementById("player2").value
 
-expeditions=parseInt(document.getElementById("expeditions").value)
+players=[p1]
+
+if(p2.trim()!==""){
+players.push(p2)
+}
+
+expeditions=parseInt(
+document.getElementById("expeditions").value
+)
 
 round=1
+currentPlayer=0
 totals=[0,0]
 
 startTurn()
@@ -44,10 +67,11 @@ function startTurn(){
 
 renderBoard()
 
-document.getElementById("roundTitle").innerText="Ronda "+round
+document.getElementById("roundTitle").innerText=
+"Round "+round
 
 document.getElementById("playerTurn").innerText=
-"Turno de "+players[currentPlayer]
+"Turn: "+players[currentPlayer]
 
 show("game")
 
@@ -73,7 +97,11 @@ card.className="card"
 
 card.innerText=v
 
-card.onclick=()=>card.classList.toggle("selected")
+card.addEventListener("click",()=>{
+
+card.classList.toggle("selected")
+
+})
 
 exp.appendChild(card)
 
@@ -95,29 +123,27 @@ let numbers=cards
 
 let score=(numbers-20)*(wagers+1)
 
-if(cards.length>=8) score+=20
+if(cards.length>=8){
+score+=20
+}
 
 return score
 
 }
 
-let roundScores=[0,0]
-
 function finishTurn(){
 
-let expeditions=document.querySelectorAll(".expedition")
+let expeditionEls=document.querySelectorAll(".expedition")
 
 let total=0
 
-expeditions.forEach(exp=>{
+expeditionEls.forEach(exp=>{
 
 let cards=[...exp.querySelectorAll(".selected")]
 .map(c=>c.innerText)
 
 if(cards.length>0){
-
 total+=calculateExpedition(cards)
-
 }
 
 })
@@ -139,19 +165,20 @@ showRoundResult()
 function showRoundResult(){
 
 totals[0]+=roundScores[0]
-totals[1]+=roundScores[1]
-
-let text=""
-
-text+=players[0]+" : "+roundScores[0]+"<br>"
 
 if(players.length===2){
-
-text+=players[1]+" : "+roundScores[1]+"<br>"
-
+totals[1]+=roundScores[1]
 }
 
-document.getElementById("roundScores").innerHTML=text
+let html=""
+
+html+=players[0]+" : "+roundScores[0]+"<br>"
+
+if(players.length===2){
+html+=players[1]+" : "+roundScores[1]+"<br>"
+}
+
+document.getElementById("roundScores").innerHTML=html
 
 show("roundResult")
 
@@ -161,14 +188,13 @@ function nextRound(){
 
 round++
 
-currentPlayer=0
-
 roundScores=[0,0]
+
+currentPlayer=0
 
 if(round>3){
 
 showFinal()
-
 return
 
 }
@@ -188,10 +214,9 @@ if(players.length===2){
 html+=players[1]+" : "+totals[1]+"<br><br>"
 
 let winner=
-
 totals[0]>totals[1] ? players[0] : players[1]
 
-html+="🏆 Ganador: "+winner
+html+="🏆 Greatest Explorer: "+winner
 
 }
 

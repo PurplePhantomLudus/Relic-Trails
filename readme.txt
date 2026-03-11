@@ -1,18 +1,12 @@
-Aplicación web progresiva para calcular la puntuación del juego Lost Cities.
+# Relic Trails
 
-## Funciones
+Relic Trails es una aplicación PWA para calcular puntuaciones de expediciones en partidas de mesa.
+
+## Características
 
 - 1 o 2 jugadores
-- modo 5 o 6 expediciones
-- cálculo automático
+- 5 o 6 expediciones
 - 3 rondas
-- resultado final
+- cálculo automático
 - instalable como app
 - funciona offline
-
-## Publicar en GitHub Pages
-
-1 subir archivos
-2 ir a Settings
-3 Pages
-4 Deploy from main
