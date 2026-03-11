@@ -1,84 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Relic Trails</title>
-
-<link rel="stylesheet" href="styles.css">
-<link rel="manifest" href="manifest.json">
-
-<script src="app.js" defer></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Relic Trails - Lost Cities Companion</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
+    <div id="welcome" class="screen">
+        <img src="assets/welcome/welcome.png" class="welcome-img" alt="Relic Trails">
+        <h1>Relic Trails</h1>
+        <p>Official Score Tracker</p>
+        <button id="btnContinue">Iniciar Expedición</button>
+    </div>
 
-<div id="welcome" class="screen">
+    <div id="setup" class="screen hidden">
+        <h2>Preparar el Viaje</h2>
+        <div class="card">
+            <input id="player1" type="text" placeholder="Explorador 1" maxlength="12">
+            <input id="player2" type="text" placeholder="Explorador 2 (opcional)" maxlength="12">
+            <h3>Variante de Expediciones</h3>
+            <select id="expeditions">
+                <option value="5">Clásico (5 Colores)</option>
+                <option value="6">Moderno (6 Colores)</option>
+            </select>
+            <button id="btnStart">Comenzar Aventura</button>
+        </div>
+    </div>
 
-<img src="assets/welcome/welcome.jpg" class="welcome">
+    <div id="game" class="screen hidden">
+        <header>
+            <h2 id="roundTitle">Ronda 1</h2>
+            <div id="playerTurn" class="badge">Turno de: Jugador</div>
+        </header>
+        <div id="board"></div>
+        <button id="btnFinishTurn">Calcular Puntuación</button>
+    </div>
 
-<h1>Relic Trails</h1>
+    <div id="roundResult" class="screen hidden">
+        <h2>Resultados de la Ronda</h2>
+        <div id="roundScores" class="score-card"></div>
+        <button id="btnNextRound">Siguiente Ronda</button>
+    </div>
 
-<p>Track your expedition scores and discover the greatest explorer.</p>
-
-<button id="btnContinue">Start Expedition</button>
-
-</div>
-
-<div id="setup" class="screen hidden">
-
-<h2>Prepare the Expedition</h2>
-
-<input id="player1" placeholder="Explorer 1">
-
-<input id="player2" placeholder="Explorer 2 (optional)">
-
-<h3>Number of Expeditions</h3>
-
-<select id="expeditions">
-<option value="5">5 Expeditions</option>
-<option value="6">6 Expeditions</option>
-</select>
-
-<button id="btnStart">Begin Journey</button>
-
-</div>
-
-<div id="game" class="screen hidden">
-
-<h2 id="roundTitle"></h2>
-
-<h3 id="playerTurn"></h3>
-
-<div id="board"></div>
-
-<button id="btnFinishTurn">Calculate Expedition</button>
-
-</div>
-
-<div id="roundResult" class="screen hidden">
-
-<h2>Round Results</h2>
-
-<div id="roundScores"></div>
-
-<button id="btnNextRound">Next Round</button>
-
-</div>
-
-<div id="finalResult" class="screen hidden">
-
-<h2>Final Expedition Results</h2>
-
-<div id="finalScores"></div>
-
-<button id="btnRestart">New Game</button>
-
-</div>
-
+    <div id="finalResult" class="screen hidden">
+        <h1>Fin del Camino</h1>
+        <div id="finalScores" class="score-card"></div>
+        <button id="btnRestart">Nueva Partida</button>
+    </div>
+    <script src="app.js"></script>
 </body>
 </html>
