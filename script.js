@@ -1,115 +1,214 @@
-let numExpediciones = 5;
-let rondaActual = 1;
-let turnoJugador = 1;
-let nombres = ["", ""];
-let puntuaciones = [[], []]; // Almacena puntos por ronda [J1][R1, R2, R3]
+let players=[]
+let currentPlayer=0
+let round=1
+let expeditions=5
 
-const configColores = [
-    { n: 'Desierto', c: 'yellow' },
-    { n: 'Neptuno', c: 'blue' },
-    { n: 'Himalaya', c: 'white' },
-    { n: 'Brasil', c: 'green' },
-    { n: 'Volcanes', c: 'red' },
-    { n: 'Moderno', c: 'purple' }
-];
+let totals=[0,0]
 
-function seleccionarModo(n) {
-    numExpediciones = n;
-    document.getElementById('btn-5').classList.toggle('seleccionado', n === 5);
-    document.getElementById('btn-6').classList.toggle('seleccionado', n === 6);
+const colors=["red","blue","green","yellow","white","purple"]
+
+const values=["W","W","W",2,3,4,5,6,7,8,9,10]
+
+function show(id){
+
+document.querySelectorAll(".screen")
+.forEach(s=>s.classList.add("hidden"))
+
+document.getElementById(id).classList.remove("hidden")
+
 }
 
-function iniciarPartida() {
-    nombres = document.getElementById('nombre-j1').value || "Jugador 1";
-    nombres[1] = document.getElementById('nombre-j2').value || "Jugador 2";
-    
-    document.getElementById('pantalla-inicio').classList.remove('activa');
-    document.getElementById('pantalla-puntuacion').classList.add('activa');
-    generarFormulario();
-    actualizarCabecera();
+function showSetup(){
+
+show("setup")
+
 }
 
-function generarFormulario() {
-    const contenedor = document.getElementById('contenedor-expediciones');
-    contenedor.innerHTML = `
-        <div style="display:grid; grid-template-columns: 100px 1fr 1fr; gap:8px; margin-bottom:5px; font-size:0.7rem; text-align:center; color:var(--gold)">
-            <span>EXPEDICIÓN</span><span>SUMA CARTAS</span><span>Nº INV. / TOT.</span>
-        </div>`;
-    
-    for (let i = 0; i < numExpediciones; i++) {
-        const exp = configColores[i];
-        contenedor.innerHTML += `
-            <div class="expedicion-card ${exp.c}">
-                <label>${exp.n}</label>
-                <input type="number" class="val-suma" placeholder="0" min="0">
-                <div style="display:flex; gap:4px">
-                    <input type="number" class="val-inv" placeholder="0" min="0" max="3">
-                    <input type="number" class="val-tot" placeholder="0" min="0">
-                </div>
-            </div>`;
-    }
+function startGame(){
+
+players=[
+document.getElementById("player1").value || "Jugador 1",
+document.getElementById("player2").value || "Jugador 2"
+]
+
+expeditions=parseInt(document.getElementById("expeditions").value)
+
+round=1
+totals=[0,0]
+
+startTurn()
+
 }
 
-function guardarTurno() {
-    let totalTurno = 0;
-    const inputsSuma = document.querySelectorAll('.val-suma');
-    const inputsInv = document.querySelectorAll('.val-inv');
-    const inputsTot = document.querySelectorAll('.val-tot');
+function startTurn(){
 
-    inputsSuma.forEach((input, i) => {
-        let suma = parseInt(input.value) || 0;
-        let inv = parseInt(inputsInv[i].value) || 0;
-        let tot = parseInt(inputsTot[i].value) || 0;
+renderBoard()
 
-        if (tot > 0) { // Si hay cartas, se procesa la expedición
-            let calculo = (suma - 20) * (1 + inv); // [Source 4]
-            if (tot >= 8) calculo += 20; // Bono expedición larga
-            totalTurno += calculo;
-        }
-    });
+document.getElementById("roundTitle").innerText="Ronda "+round
 
-    puntuaciones[turnoJugador - 1].push(totalTurno);
+document.getElementById("playerTurn").innerText=
+"Turno de "+players[currentPlayer]
 
-    if (turnoJugador === 1) {
-        turnoJugador = 2;
-        generarFormulario(); // Limpiar inputs para el siguiente jugador
-        actualizarCabecera();
-    } else {
-        if (rondaActual < 3) {
-            rondaActual++;
-            turnoJugador = 1;
-            generarFormulario();
-            actualizarCabecera();
-        } else {
-            mostrarFinal();
-        }
-    }
+show("game")
+
 }
 
-function actualizarCabecera() {
-    document.getElementById('info-ronda').innerText = `Ronda ${rondaActual} / 3`;
-    document.getElementById('info-turno').innerText = `Turno: ${nombres[turnoJugador - 1]}`;
-    window.scrollTo(0,0);
+function renderBoard(){
+
+let board=document.getElementById("board")
+
+board.innerHTML=""
+
+for(let i=0;i<expeditions;i++){
+
+let exp=document.createElement("div")
+
+exp.className="expedition"
+
+values.forEach(v=>{
+
+let card=document.createElement("div")
+
+card.className="card"
+
+card.innerText=v
+
+card.onclick=()=>card.classList.toggle("selected")
+
+exp.appendChild(card)
+
+})
+
+board.appendChild(exp)
+
 }
 
-function mostrarFinal() {
-    document.getElementById('pantalla-puntuacion').classList.remove('activa');
-    document.getElementById('pantalla-resultados').classList.add('activa');
+}
 
-    const sum1 = puntuaciones.reduce((a, b) => a + b, 0);
-    const sum2 = puntuaciones[1].reduce((a, b) => a + b, 0);
+function calculateExpedition(cards){
 
-    document.getElementById('ganador-texto').innerText = sum1 > sum2 ? `¡Victoria para ${nombres}!` : sum2 > sum1 ? `¡Victoria para ${nombres[1]}!` : "¡Empate Legendario!";
+let wagers=cards.filter(c=>c==="W").length
 
-    let tabla = `
-        <table class="tabla-resumen">
-            <tr><th>Ronda</th><th>${nombres}</th><th>${nombres[1]}</th></tr>
-            <tr><td>R1</td><td>${puntuaciones}</td><td>${puntuaciones[1]}</td></tr>
-            <tr><td>R2</td><td>${puntuaciones[1]}</td><td>${puntuaciones[1]}</td></tr>
-            <tr><td>R3</td><td>${puntuaciones[4]}</td><td>${puntuaciones[1][4]}</td></tr>
-            <tr style="font-weight:bold; font-size:1.2rem; color:var(--gold)">
-                <td>TOTAL</td><td>${sum1}</td><td>${sum2}</td>
-            </tr>
-        </table>`;
-    document.getElementById('tabla-resultados').innerHTML = tabla;
+let numbers=cards
+.filter(c=>c!=="W")
+.reduce((a,b)=>a+Number(b),0)
+
+let score=(numbers-20)*(wagers+1)
+
+if(cards.length>=8) score+=20
+
+return score
+
+}
+
+let roundScores=[0,0]
+
+function finishTurn(){
+
+let expeditions=document.querySelectorAll(".expedition")
+
+let total=0
+
+expeditions.forEach(exp=>{
+
+let cards=[...exp.querySelectorAll(".selected")]
+.map(c=>c.innerText)
+
+if(cards.length>0){
+
+total+=calculateExpedition(cards)
+
+}
+
+})
+
+roundScores[currentPlayer]=total
+
+if(players.length===2 && currentPlayer===0){
+
+currentPlayer=1
+startTurn()
+return
+
+}
+
+showRoundResult()
+
+}
+
+function showRoundResult(){
+
+totals[0]+=roundScores[0]
+totals[1]+=roundScores[1]
+
+let text=""
+
+text+=players[0]+" : "+roundScores[0]+"<br>"
+
+if(players.length===2){
+
+text+=players[1]+" : "+roundScores[1]+"<br>"
+
+}
+
+document.getElementById("roundScores").innerHTML=text
+
+show("roundResult")
+
+}
+
+function nextRound(){
+
+round++
+
+currentPlayer=0
+
+roundScores=[0,0]
+
+if(round>3){
+
+showFinal()
+
+return
+
+}
+
+startTurn()
+
+}
+
+function showFinal(){
+
+let html=""
+
+html+=players[0]+" : "+totals[0]+"<br>"
+
+if(players.length===2){
+
+html+=players[1]+" : "+totals[1]+"<br><br>"
+
+let winner=
+
+totals[0]>totals[1] ? players[0] : players[1]
+
+html+="🏆 Ganador: "+winner
+
+}
+
+document.getElementById("finalScores").innerHTML=html
+
+show("finalResult")
+
+}
+
+function restart(){
+
+location.reload()
+
+}
+
+if("serviceWorker" in navigator){
+
+navigator.serviceWorker.register("service-worker.js")
+
 }

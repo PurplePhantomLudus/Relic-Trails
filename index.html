@@ -1,57 +1,83 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lost Cities Explorer Score</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="manifest" href="manifest.json">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Lost Cities Score</title>
+
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.json">
+
 </head>
+
 <body>
-    <div id="pantalla-inicio" class="pantalla activa">
-        <header>
-            <h1>LOST CITIES</h1>
-            <p>Calculadora de Expediciones</p>
-        </header>
-        <div class="card">
-            <div class="grupo-input">
-                <label>Explorador 1</label>
-                <input type="text" id="nombre-j1" placeholder="Nombre...">
-            </div>
-            <div class="grupo-input">
-                <label>Explorador 2</label>
-                <input type="text" id="nombre-j2" placeholder="Nombre...">
-            </div>
-            <div class="grupo-opciones">
-                <p>Variante de Juego</p>
-                <div class="botones-seleccion">
-                    <button class="btn-opcion seleccionado" id="btn-5" onclick="seleccionarModo(5)">Clásico (5)</button>
-                    <button class="btn-opcion" id="btn-6" onclick="seleccionarModo(6)">Moderno (6)</button>
-                </div>
-            </div>
-            <button class="btn-principal" onclick="iniciarPartida()">¡Comenzar Aventura!</button>
-        </div>
-    </div>
 
-    <div id="pantalla-puntuacion" class="pantalla">
-        <header>
-            <h2 id="info-ronda">Ronda 1 / 3</h2>
-            <h3 id="info-turno">Turno de: Jugador</h3>
-        </header>
-        <div id="contenedor-expediciones"></div>
-        <button class="btn-principal" onclick="guardarTurno()">Finalizar Turno</button>
-    </div>
+<div id="welcome" class="screen">
 
-    <div id="pantalla-resultados" class="pantalla">
-        <header>
-            <h1>Fin del Viaje</h1>
-            <h2 id="ganador-texto"></h2>
-        </header>
-        <div id="tabla-resultados" class="card"></div>
-        <button class="btn-principal" onclick="location.reload()">Nueva Partida</button>
-    </div>
-    <script src="app.js"></script>
+<img src="assets/welcome/welcome.jpg" class="welcome">
+
+<h1>Lost Cities Score</h1>
+
+<button onclick="showSetup()">Continuar</button>
+
+</div>
+
+<div id="setup" class="screen hidden">
+
+<h2>Configuración</h2>
+
+<input id="player1" placeholder="Jugador 1">
+
+<input id="player2" placeholder="Jugador 2">
+
+<h3>Expediciones</h3>
+
+<select id="expeditions">
+<option value="5">5 expediciones</option>
+<option value="6">6 expediciones</option>
+</select>
+
+<button onclick="startGame()">Iniciar partida</button>
+
+</div>
+
+<div id="game" class="screen hidden">
+
+<h2 id="roundTitle"></h2>
+
+<div id="playerTurn"></div>
+
+<div id="board"></div>
+
+<button onclick="finishTurn()">Finalizar turno</button>
+
+</div>
+
+<div id="roundResult" class="screen hidden">
+
+<h2>Resultado de la ronda</h2>
+
+<div id="roundScores"></div>
+
+<button onclick="nextRound()">Siguiente ronda</button>
+
+</div>
+
+<div id="finalResult" class="screen hidden">
+
+<h2>Resultado final</h2>
+
+<div id="finalScores"></div>
+
+<button onclick="restart()">Nueva partida</button>
+
+</div>
+
+<script src="app.js"></script>
+
 </body>
+
 </html>
