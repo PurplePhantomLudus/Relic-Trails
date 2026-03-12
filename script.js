@@ -4,8 +4,7 @@ let ronda = 1;
 let expediciones = 5;
 
 let totales = [0, 0];
-// Ahora guardamos las cartas de los dos jugadores por separado
-// Índice 0 para el Jugador 1, Índice 1 para el Jugador 2
+let puntosRondaActual = [0, 0]; // Novedad: guarda los puntos de la ronda en curso
 let cartasJugadas = [{}, {}]; 
 
 const colores = ["red", "blue", "green", "yellow", "white", "purple"];
@@ -23,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function mostrar(id) {
     document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
     document.getElementById(id).classList.remove("hidden");
+    window.scrollTo(0, 0); // Mejora UX: vuelve arriba al cambiar de pantalla
 }
 
 function iniciarJuego() {
@@ -43,6 +43,7 @@ function iniciarJuego() {
 
 function resetRonda() {
     cartasJugadas = [{}, {}];
+    puntosRondaActual = [0, 0]; // Reiniciamos el balance al empezar nueva ronda
     for (let j = 0; j < 2; j++) {
         for (let i = 0; i < expediciones; i++) {
             cartasJugadas[j][i] = [];
@@ -79,37 +80,32 @@ function renderizarTablero() {
         const play = document.createElement("div");
         play.className = "play-zone";
 
-        // Mostrar cartas en la expedición del jugador actual
         cartasJugadas[jugadorActual][i].forEach((c, index) => {
             const carta = document.createElement("div");
             carta.className = "card played";
             carta.style.backgroundImage = c === "W" ? "url(assets/cards/wager.png)" : "url(assets/cards/" + colores[i] + ".png)";
             carta.innerHTML = "<div class='cardValue'>" + c + "</div>";
-            
             carta.onclick = () => quitarCarta(i, index);
-            
             play.appendChild(carta);
         });
 
         const zona = document.createElement("div");
         zona.className = "cards";
 
-        // REGLA CLAVE: Las cartas disponibles son la baraja menos las que tiene el J1 y el J2
         let disponibles = [...valores];
         
-        // Restamos las del Jugador 1
         cartasJugadas[0][i].forEach(jugada => {
             let idx = disponibles.indexOf(jugada);
             if (idx !== -1) disponibles.splice(idx, 1);
         });
         
-        // Restamos las del Jugador 2
-        cartasJugadas[1][i].forEach(jugada => {
-            let idx = disponibles.indexOf(jugada);
-            if (idx !== -1) disponibles.splice(idx, 1);
-        });
+        if (jugadores.length === 2) {
+            cartasJugadas[1][i].forEach(jugada => {
+                let idx = disponibles.indexOf(jugada);
+                if (idx !== -1) disponibles.splice(idx, 1);
+            });
+        }
 
-        // Mostrar las cartas que siguen libres en la baraja
         disponibles.forEach(v => {
             const carta = document.createElement("div");
             carta.className = "card";
@@ -121,7 +117,6 @@ function renderizarTablero() {
             
             carta.appendChild(valor);
             carta.onclick = () => jugarCarta(i, v);
-            
             zona.appendChild(carta);
         });
 
@@ -164,42 +159,50 @@ function quitarCarta(exp, index) {
 
 function calcular(cartas) {
     if (cartas.length === 0) return 0;
-
     let apuestas = cartas.filter(c => c === "W").length;
     let nums = cartas.filter(c => c !== "W").reduce((a, b) => a + Number(b), 0);
-
     let score = (nums - 20) * (apuestas + 1);
-
     if (cartas.length >= 8) score += 20;
-
     return score;
 }
 
 function terminarTurno() {
-    let total = 0;
+    let totalTurno = 0;
     for (let i = 0; i < expediciones; i++) {
         if (cartasJugadas[jugadorActual][i].length > 0) {
-            total += calcular(cartasJugadas[jugadorActual][i]);
+            totalTurno += calcular(cartasJugadas[jugadorActual][i]);
         }
     }
 
-    totales[jugadorActual] += total;
+    puntosRondaActual[jugadorActual] = totalTurno; // Guardamos el balance de esta ronda
+    totales[jugadorActual] += totalTurno;          // Sumamos al global histórico
 
-    // Pasamos al Jugador 2 pero NO reseteamos la ronda
+    // Si es el Jugador 1, pasamos el turno al Jugador 2
     if (jugadores.length === 2 && jugadorActual === 0) {
         jugadorActual = 1;
         iniciarTurno();
         return;
     }
 
+    // Si ya han jugado los dos, mostramos el cuadro de resultados detallado
     mostrarResultado();
 }
 
 function mostrarResultado() {
-    let html = jugadores[0] + " : " + totales[0] + " puntos<br>";
+    let html = "<div style='text-align: left; background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 10px;'>";
+    
+    html += "<strong>" + jugadores[0] + "</strong><br>";
+    html += "Puntos de esta ronda: <span style='color:#facc15'>" + puntosRondaActual[0] + "</span><br>";
+    html += "Total acumulado: <strong>" + totales[0] + "</strong><br>";
+    
     if (jugadores.length === 2) {
-        html += jugadores[1] + " : " + totales[1] + " puntos<br>";
+        html += "<hr style='border-color: #334155; margin: 10px 0;'>";
+        html += "<strong>" + jugadores[1] + "</strong><br>";
+        html += "Puntos de esta ronda: <span style='color:#facc15'>" + puntosRondaActual[1] + "</span><br>";
+        html += "Total acumulado: <strong>" + totales[1] + "</strong><br>";
     }
+    
+    html += "</div>";
     document.getElementById("roundScores").innerHTML = html;
     mostrar("roundResult");
 }
@@ -216,17 +219,19 @@ function siguienteRonda() {
 }
 
 function mostrarFinal() {
-    let html = jugadores[0] + " : " + totales[0] + " puntos<br>";
+    let html = "<div style='text-align: left; background: #1e293b; padding: 15px; border-radius: 10px;'>";
+    html += "<strong>" + jugadores[0] + "</strong> : " + totales[0] + " puntos en total<br>";
 
     if (jugadores.length === 2) {
-        html += jugadores[1] + " : " + totales[1] + " puntos<br><br>";
+        html += "<strong>" + jugadores[1] + "</strong> : " + totales[1] + " puntos en total<br><br>";
         let ganador;
         if (totales[0] > totales[1]) ganador = jugadores[0];
         else if (totales[1] > totales[0]) ganador = jugadores[1];
         else ganador = "Empate";
         
-        html += "🏆 Gran Explorador: " + ganador;
+        html += "<h3 style='color:#facc15; text-align:center;'>🏆 Gran Explorador: " + ganador + " 🏆</h3>";
     }
+    html += "</div>";
 
     document.getElementById("finalScores").innerHTML = html;
     mostrar("finalResult");
