@@ -4,8 +4,8 @@ let ronda = 1;
 let expediciones = 5;
 
 let totales = [0, 0];
-let puntosRondaActual = [0, 0]; // Guarda los puntos de la ronda en curso
-let cartasJugadas = [{}, {}]; // Índice 0: Jugador 1 | Índice 1: Jugador 2
+let puntosRondaActual = [0, 0];
+let cartasJugadas = [{}, {}]; 
 
 const colores = ["red", "blue", "green", "yellow", "white", "purple"];
 const nombres = ["Volcán", "Océano", "Selva", "Desierto", "Hielo", "Misterio"];
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function mostrar(id) {
     document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
     document.getElementById(id).classList.remove("hidden");
-    window.scrollTo(0, 0); // Vuelve arriba al cambiar de pantalla
+    window.scrollTo(0, 0);
 }
 
 function iniciarJuego() {
@@ -43,7 +43,7 @@ function iniciarJuego() {
 
 function resetRonda() {
     cartasJugadas = [{}, {}];
-    puntosRondaActual = [0, 0]; // Reiniciamos el balance de la ronda
+    puntosRondaActual = [0, 0];
     for (let j = 0; j < 2; j++) {
         for (let i = 0; i < expediciones; i++) {
             cartasJugadas[j][i] = [];
@@ -80,14 +80,10 @@ function renderizarTablero() {
         const play = document.createElement("div");
         play.className = "play-zone";
 
-        // 1. Mostrar las cartas ya jugadas en la expedición
+        // Cartas ya jugadas en la expedición
         cartasJugadas[jugadorActual][i].forEach((c, index) => {
             const carta = document.createElement("div");
             carta.className = "card played";
-            
-            // ¡NUEVO! Añadimos la clase especial si es una carta de apuesta
-            if (c === "W") carta.classList.add("wager"); 
-
             carta.style.backgroundImage = c === "W" ? "url(assets/cards/wager.png)" : "url(assets/cards/" + colores[i] + ".png)";
             carta.innerHTML = "<div class='cardValue'>" + c + "</div>";
             carta.onclick = () => quitarCarta(i, index);
@@ -98,16 +94,14 @@ function renderizarTablero() {
         const zona = document.createElement("div");
         zona.className = "cards";
 
-        // 2. Calcular qué cartas quedan disponibles en la baraja compartida
+        // Calcular cartas disponibles
         let disponibles = [...valores];
         
-        // Restamos las del Jugador 1
         cartasJugadas[0][i].forEach(jugada => {
             let idx = disponibles.indexOf(jugada);
             if (idx !== -1) disponibles.splice(idx, 1);
         });
         
-        // Restamos las del Jugador 2 (si existe)
         if (jugadores.length === 2) {
             cartasJugadas[1][i].forEach(jugada => {
                 let idx = disponibles.indexOf(jugada);
@@ -115,14 +109,10 @@ function renderizarTablero() {
             });
         }
 
-        // 3. Pintar las cartas disponibles para jugar
+        // Pintar cartas disponibles
         disponibles.forEach(v => {
             const carta = document.createElement("div");
             carta.className = "card";
-            
-            // ¡NUEVO! Añadimos la clase especial si es una carta de apuesta
-            if (v === "W") carta.classList.add("wager");
-
             carta.style.backgroundImage = v === "W" ? "url(assets/cards/wager.png)" : "url(assets/cards/" + colores[i] + ".png)";
             carta.innerHTML = "<div class='cardValue'>" + v + "</div>";
             carta.onclick = () => jugarCarta(i, v);
@@ -174,8 +164,6 @@ function calcular(cartas) {
     let nums = cartas.filter(c => c !== "W").reduce((a, b) => a + Number(b), 0);
     
     let score = (nums - 20) * (apuestas + 1);
-    
-    // Bono de 20 puntos si se juegan 8 o más cartas en la expedición
     if (cartas.length >= 8) score += 20;
     
     return score;
@@ -189,17 +177,15 @@ function terminarTurno() {
         }
     }
 
-    puntosRondaActual[jugadorActual] = totalTurno; // Guardamos el balance de esta ronda
-    totales[jugadorActual] += totalTurno;          // Sumamos al global histórico
+    puntosRondaActual[jugadorActual] = totalTurno;
+    totales[jugadorActual] += totalTurno;
 
-    // Si es el Jugador 1, pasamos el turno al Jugador 2
     if (jugadores.length === 2 && jugadorActual === 0) {
         jugadorActual = 1;
         iniciarTurno();
         return;
     }
 
-    // Si ya han jugado los dos (o solo hay un jugador), mostramos los resultados de la ronda
     mostrarResultado();
 }
 
@@ -252,7 +238,6 @@ function mostrarFinal() {
     mostrar("finalResult");
 }
 
-// Service Worker (Para que funcione como PWA en el móvil)
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
