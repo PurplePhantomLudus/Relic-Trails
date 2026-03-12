@@ -1,4 +1,4 @@
-const CACHE="relic-trails-v2"
+const CACHE="relic-trails-v3"
 
 const FILES=[
 "/",

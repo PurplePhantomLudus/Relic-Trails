@@ -59,12 +59,21 @@ border-radius:10px;
 .expedition.white{background:#555;}
 .expedition.purple{background:#4a2c5a;}
 
-.cards{
+.expedition-zone{
+display:flex;
+gap:6px;
+min-height:90px;
+padding:10px;
+border:2px dashed rgba(255,255,255,0.3);
+margin-top:10px;
+}
+
+.hand{
 display:flex;
 flex-wrap:wrap;
 justify-content:center;
-gap:6px;
-margin-top:10px;
+gap:8px;
+margin-top:20px;
 }
 
 .card{
@@ -79,11 +88,20 @@ cursor:pointer;
 font-weight:bold;
 }
 
-.card.selected{
-outline:4px solid gold;
-}
-
 .card img{
 width:100%;
 border-radius:6px;
+}
+
+.card.dragging{
+opacity:0.5;
+}
+
+.card.played{
+outline:3px solid gold;
+}
+
+.card.blocked{
+opacity:0.3;
+pointer-events:none;
 }

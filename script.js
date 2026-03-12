@@ -1,532 +1,359 @@
-let players=[]
-let currentPlayer=0
-let round=1
-let expeditions=5
+let jugadores=[]
+let jugadorActual=0
+let ronda=1
+let expediciones=5
 
-let totals=[0,0]
-let roundScores=[0,0]
+let totales=[0,0]
 
-const expeditionColors=[
-"red","blue","green","yellow","white","purple"
+let expedicionesJugador={}
+let cartasBloqueadas={}
+
+const colores=["red","blue","green","yellow","white","purple"]
+
+const nombresExpedicion=[
+"Volcán",
+"Océano",
+"Selva",
+"Desierto",
+"Hielo",
+"Misterio"
 ]
 
-const expeditionNames=[
-"Volcano","Ocean","Jungle","Desert","Ice","Mystic"
-]
-
-const values=["W","W","W",2,3,4,5,6,7,8,9,10]
+const valores=["W","W","W",2,3,4,5,6,7,8,9,10]
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-loadGame()
-
 document.getElementById("btnContinue")
-.addEventListener("click",()=>show("setup"))
+.addEventListener("click",()=>mostrar("setup"))
 
 document.getElementById("btnStart")
-.addEventListener("click",startGame)
+.addEventListener("click",iniciarJuego)
 
 document.getElementById("btnFinishTurn")
-.addEventListener("click",finishTurn)
+.addEventListener("click",terminarTurno)
 
 document.getElementById("btnNextRound")
-.addEventListener("click",nextRound)
+.addEventListener("click",siguienteRonda)
 
 document.getElementById("btnRestart")
-.addEventListener("click",restart)
+.addEventListener("click",reiniciar)
 
 })
 
-function show(id){
+function mostrar(id){
+
 document.querySelectorAll(".screen")
 .forEach(s=>s.classList.add("hidden"))
 
 document.getElementById(id).classList.remove("hidden")
+
 }
 
-function startGame(){
+function iniciarJuego(){
 
-const p1=document.getElementById("player1").value||"Explorer 1"
-const p2=document.getElementById("player2").value
+const j1=document.getElementById("player1").value || "Explorador 1"
+const j2=document.getElementById("player2").value
 
-players=[p1]
+jugadores=[j1]
 
-if(p2.trim()!==""){
-players.push(p2)
+if(j2.trim()!==""){
+jugadores.push(j2)
 }
 
-expeditions=parseInt(
+expediciones=parseInt(
 document.getElementById("expeditions").value
 )
 
-round=1
-totals=[0,0]
-roundScores=[0,0]
-currentPlayer=0
+jugadorActual=0
+ronda=1
+totales=[0,0]
 
-saveGame()
+resetExpediciones()
 
-startTurn()
+iniciarTurno()
 
 }
 
-function startTurn(){
+function resetExpediciones(){
 
-renderBoard()
+expedicionesJugador={}
+cartasBloqueadas={}
+
+for(let i=0;i<expediciones;i++){
+
+expedicionesJugador[i]=[]
+cartasBloqueadas[i]=[]
+
+}
+
+}
+
+function iniciarTurno(){
+
+renderizarTablero()
 
 document.getElementById("roundTitle").innerText=
-"Round "+round
+"Ronda "+ronda
 
 document.getElementById("playerTurn").innerText=
-"Turn: "+players[currentPlayer]
+"Turno de "+jugadores[jugadorActual]
 
-show("game")
+mostrar("game")
 
 }
 
-function renderBoard(){
+function renderizarTablero(){
 
 const board=document.getElementById("board")
-
 board.innerHTML=""
 
-for(let i=0;i<expeditions;i++){
+for(let i=0;i<expediciones;i++){
 
 const exp=document.createElement("div")
+exp.className="expedition "+colores[i]
 
-exp.className="expedition "+expeditionColors[i]
+const titulo=document.createElement("h3")
+titulo.innerText=nombresExpedicion[i]
 
-const title=document.createElement("h3")
-title.innerText=expeditionNames[i]
+const zona=document.createElement("div")
+zona.className="expedition-zone"
 
-exp.appendChild(title)
+zona.dataset.index=i
 
-const cardArea=document.createElement("div")
-cardArea.className="cards"
+zona.addEventListener("dragover",e=>e.preventDefault())
 
-values.forEach(v=>{
+zona.addEventListener("drop",soltarCarta)
 
-const card=document.createElement("div")
-card.className="card"
-card.innerText=v
-
-card.addEventListener("click",()=>{
-card.classList.toggle("selected")
-})
-
-cardArea.appendChild(card)
-
-})
-
-exp.appendChild(cardArea)
+exp.appendChild(titulo)
+exp.appendChild(zona)
 
 board.appendChild(exp)
 
 }
 
-}
-
-function calculateExpedition(cards){
-
-let wagers=cards.filter(c=>c==="W").length
-
-let numbers=cards
-.filter(c=>c!=="W")
-.reduce((a,b)=>a+Number(b),0)
-
-let score=(numbers-20)*(wagers+1)
-
-if(cards.length>=8){
-score+=20
-}
-
-return score
+crearMano()
 
 }
 
-function finishTurn(){
+function crearMano(){
 
-if(!confirm("Finish selecting cards?")){
-return
+const board=document.getElementById("board")
+
+const hand=document.createElement("div")
+hand.className="hand"
+
+valores.forEach(v=>{
+
+for(let e=0;e<expediciones;e++){
+
+if(cartasBloqueadas[e].includes(v)) continue
+
+const carta=document.createElement("div")
+carta.className="card"
+
+carta.draggable=true
+
+const img=document.createElement("img")
+
+img.src=`assets/cards/${colores[e]}/${v}.png`
+
+img.onerror=function(){
+carta.innerText=v
 }
 
-let expeditionEls=document.querySelectorAll(".cards")
+carta.appendChild(img)
 
-let total=0
+carta.dataset.valor=v
+carta.dataset.expedicion=e
 
-expeditionEls.forEach(exp=>{
+carta.addEventListener("dragstart",dragCarta)
 
-let cards=[...exp.querySelectorAll(".selected")]
-.map(c=>c.innerText)
+hand.appendChild(carta)
 
-if(cards.length>0){
-total+=calculateExpedition(cards)
 }
 
 })
 
-roundScores[currentPlayer]=total
+board.appendChild(hand)
 
-if(players.length===2 && currentPlayer===0){
+}
 
-currentPlayer=1
-saveGame()
-startTurn()
+function dragCarta(e){
+
+e.target.classList.add("dragging")
+
+e.dataTransfer.setData(
+"text",
+JSON.stringify({
+valor:e.target.dataset.valor,
+exp:e.target.dataset.expedicion
+})
+)
+
+}
+
+function soltarCarta(e){
+
+const data=JSON.parse(
+e.dataTransfer.getData("text")
+)
+
+const expIndex=parseInt(e.currentTarget.dataset.index)
+
+if(expIndex!=data.exp) return
+
+const zona=e.currentTarget
+
+const cartas=expedicionesJugador[expIndex]
+
+let valor=data.valor
+
+if(valor!=="W"){
+
+valor=parseInt(valor)
+
+let ultima=cartas.filter(c=>c!=="W").pop()
+
+if(ultima && valor<=ultima){
+
+alert("Las cartas deben ir en orden creciente")
+
 return
 
 }
 
-showRoundResult()
+}
+
+cartas.push(valor)
+
+cartasBloqueadas[expIndex].push(valor)
+
+const carta=document.createElement("div")
+carta.className="card played"
+
+carta.innerText=valor
+
+zona.appendChild(carta)
+
+renderizarTablero()
 
 }
 
-function showRoundResult(){
+function calcularExpedicion(cartas){
 
-totals[0]+=roundScores[0]
+let apuestas=cartas.filter(c=>c==="W").length
 
-if(players.length===2){
-totals[1]+=roundScores[1]
+let numeros=cartas
+.filter(c=>c!=="W")
+.reduce((a,b)=>a+Number(b),0)
+
+let puntos=(numeros-20)*(apuestas+1)
+
+if(cartas.length>=8){
+puntos+=20
 }
+
+return puntos
+
+}
+
+function terminarTurno(){
+
+let total=0
+
+for(let i=0;i<expediciones;i++){
+
+let cartas=expedicionesJugador[i]
+
+if(cartas.length>0){
+
+total+=calcularExpedicion(cartas)
+
+}
+
+}
+
+totales[jugadorActual]+=total
+
+if(jugadores.length===2 && jugadorActual===0){
+
+jugadorActual=1
+resetExpediciones()
+iniciarTurno()
+return
+
+}
+
+mostrarResultado()
+
+}
+
+function mostrarResultado(){
 
 let html=""
 
-html+=players[0]+" : "+roundScores[0]+"<br>"
+html+=jugadores[0]+" : "+totales[0]+" puntos<br>"
 
-if(players.length===2){
-html+=players[1]+" : "+roundScores[1]+"<br>"
+if(jugadores.length===2){
+html+=jugadores[1]+" : "+totales[1]+" puntos<br>"
 }
 
 document.getElementById("roundScores").innerHTML=html
 
-show("roundResult")
-
-saveGame()
+mostrar("roundResult")
 
 }
 
-function nextRound(){
+function siguienteRonda(){
 
-round++
-roundScores=[0,0]
-currentPlayer=0
+ronda++
 
-if(round>3){
-showFinal()
+if(ronda>3){
+
+mostrarFinal()
+
 return
-}
-
-saveGame()
-
-startTurn()
 
 }
 
-function showFinal(){
+jugadorActual=0
+
+resetExpediciones()
+
+iniciarTurno()
+
+}
+
+function mostrarFinal(){
 
 let html=""
 
-html+=players[0]+" : "+totals[0]+"<br>"
+html+=jugadores[0]+" : "+totales[0]+" puntos<br>"
 
-if(players.length===2){
+if(jugadores.length===2){
 
-html+=players[1]+" : "+totals[1]+"<br><br>"
+html+=jugadores[1]+" : "+totales[1]+" puntos<br><br>"
 
-let winner
+let ganador
 
-if(totals[0]>totals[1]) winner=players[0]
-else if(totals[1]>totals[0]) winner=players[1]
-else winner="Tie"
+if(totales[0]>totales[1]) ganador=jugadores[0]
+else if(totales[1]>totales[0]) ganador=jugadores[1]
+else ganador="Empate"
 
-html+="🏆 Greatest Explorer: "+winner
+html+="🏆 Gran Explorador: "+ganador
 
 }
 
 document.getElementById("finalScores").innerHTML=html
 
-show("finalResult")
-
-localStorage.removeItem("relicTrailsGame")
+mostrar("finalResult")
 
 }
 
-function restart(){
-localStorage.removeItem("relicTrailsGame")
+function reiniciar(){
 location.reload()
-}
-
-function saveGame(){
-
-const state={
-players,
-currentPlayer,
-round,
-totals,
-roundScores,
-expeditions
-}
-
-localStorage.setItem(
-"relicTrailsGame",
-JSON.stringify(state)
-)
-
-}
-
-function loadGame(){
-
-const saved=localStorage.getItem("relicTrailsGame")
-
-if(!saved) return
-
-const state=JSON.parse(saved)
-
-players=state.players
-currentPlayer=state.currentPlayer
-round=state.round
-totals=state.totals
-roundScores=state.roundScores
-expeditions=state.expeditions
-
-startTurn()
-
 }
 
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js")
-}
-
-function startGame(){
-
-const p1 = document.getElementById("player1").value || "Explorer 1"
-const p2 = document.getElementById("player2").value
-
-players = [p1]
-
-if(p2.trim() !== ""){
-players.push(p2)
-}
-
-expeditions = parseInt(
-document.getElementById("expeditions").value
-)
-
-round = 1
-currentPlayer = 0
-
-totals = [0,0]
-roundScores = [0,0]
-
-startTurn()
-
-}
-
-function startTurn(){
-
-renderBoard()
-
-document.getElementById("roundTitle").innerText =
-"Round " + round
-
-document.getElementById("playerTurn").innerText =
-"Turn: " + players[currentPlayer]
-
-show("game")
-
-}
-
-function renderBoard(){
-
-const board = document.getElementById("board")
-
-board.innerHTML = ""
-
-for(let i=0;i<expeditions;i++){
-
-const exp = document.createElement("div")
-
-exp.className = "expedition"
-
-const title = document.createElement("h4")
-title.innerText = expeditionNames[i]
-
-exp.appendChild(title)
-
-values.forEach(v=>{
-
-const card = document.createElement("div")
-
-card.className = "card"
-
-card.innerText = v
-
-card.addEventListener("click",()=>{
-card.classList.toggle("selected")
-})
-
-exp.appendChild(card)
-
-})
-
-board.appendChild(exp)
-
-}
-
-}
-
-function calculateExpedition(cards){
-
-let wagers = cards.filter(c=>c==="W").length
-
-let numbers = cards
-.filter(c=>c!=="W")
-.reduce((a,b)=>a + Number(b),0)
-
-let score = (numbers - 20) * (wagers + 1)
-
-if(cards.length >= 8){
-score += 20
-}
-
-return score
-
-}
-
-function finishTurn(){
-
-if(!confirm("Are you sure you finished selecting cards?")){
-return
-}
-
-let expeditionEls =
-document.querySelectorAll(".expedition")
-
-let total = 0
-
-let detailHTML = ""
-
-expeditionEls.forEach((exp,i)=>{
-
-let cards =
-[...exp.querySelectorAll(".selected")]
-.map(c=>c.innerText)
-
-let score = 0
-
-if(cards.length>0){
-score = calculateExpedition(cards)
-}
-
-total += score
-
-detailHTML +=
-`<p>${expeditionNames[i]}: ${score}</p>`
-
-})
-
-roundScores[currentPlayer] = total
-
-if(players.length===2 && currentPlayer===0){
-
-currentPlayer = 1
-startTurn()
-
-return
-
-}
-
-showRoundResult(detailHTML)
-
-}
-
-function showRoundResult(details){
-
-totals[0] += roundScores[0]
-
-if(players.length===2){
-totals[1] += roundScores[1]
-}
-
-let html = ""
-
-html += `<h3>${players[0]}</h3>`
-html += `<p>Round Score: ${roundScores[0]}</p>`
-
-if(players.length===2){
-
-html += `<h3>${players[1]}</h3>`
-html += `<p>Round Score: ${roundScores[1]}</p>`
-
-}
-
-html += "<hr>"
-html += details
-
-document.getElementById("roundScores").innerHTML = html
-
-show("roundResult")
-
-}
-
-function nextRound(){
-
-round++
-
-roundScores = [0,0]
-
-currentPlayer = 0
-
-if(round > 3){
-
-showFinal()
-
-return
-
-}
-
-startTurn()
-
-}
-
-function showFinal(){
-
-let html = ""
-
-html += `<p>${players[0]}: ${totals[0]}</p>`
-
-if(players.length===2){
-
-html += `<p>${players[1]}: ${totals[1]}</p>`
-
-let winner
-
-if(totals[0] > totals[1]){
-winner = players[0]
-}
-else if(totals[1] > totals[0]){
-winner = players[1]
-}
-else{
-winner = "Tie"
-}
-
-html += `<h2>🏆 Greatest Explorer: ${winner}</h2>`
-
-}
-
-document.getElementById("finalScores").innerHTML = html
-
-show("finalResult")
-
-}
-
-function restart(){
-
-location.reload()
-
-}
-
-if("serviceWorker" in navigator){
-
-navigator.serviceWorker.register("service-worker.js")
-
 }
