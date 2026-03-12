@@ -23,27 +23,21 @@ const valores=["W","W","W",2,3,4,5,6,7,8,9,10]
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-document.getElementById("btnContinue")
-.onclick=()=>mostrar("setup")
+document.getElementById("btnContinue").onclick=()=>mostrar("setup")
 
-document.getElementById("btnStart")
-.onclick=iniciarJuego
+document.getElementById("btnStart").onclick=iniciarJuego
 
-document.getElementById("btnFinishTurn")
-.onclick=terminarTurno
+document.getElementById("btnFinishTurn").onclick=terminarTurno
 
-document.getElementById("btnNextRound")
-.onclick=siguienteRonda
+document.getElementById("btnNextRound").onclick=siguienteRonda
 
-document.getElementById("btnRestart")
-.onclick=reiniciar
+document.getElementById("btnRestart").onclick=()=>location.reload()
 
 })
 
 function mostrar(id){
 
-document.querySelectorAll(".screen")
-.forEach(s=>s.classList.add("hidden"))
+document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"))
 
 document.getElementById(id).classList.remove("hidden")
 
@@ -60,13 +54,18 @@ if(j2.trim()!==""){
 jugadores.push(j2)
 }
 
-expediciones=parseInt(
-document.getElementById("expeditions").value
-)
+expediciones=parseInt(document.getElementById("expeditions").value)
 
 totales=[0,0]
+
 ronda=1
 jugadorActual=0
+
+cartasUsadas={}
+
+for(let i=0;i<expediciones;i++){
+cartasUsadas[i]=[]
+}
 
 resetExpediciones()
 
@@ -77,13 +76,9 @@ iniciarTurno()
 function resetExpediciones(){
 
 expedicionesJugador={}
-cartasUsadas={}
 
 for(let i=0;i<expediciones;i++){
-
 expedicionesJugador[i]=[]
-cartasUsadas[i]=[]
-
 }
 
 }
@@ -102,7 +97,6 @@ mostrar("game")
 function renderizarTablero(){
 
 const board=document.getElementById("board")
-
 board.innerHTML=""
 
 for(let i=0;i<expediciones;i++){
@@ -112,6 +106,10 @@ exp.className="expedition "+colores[i]
 
 const titulo=document.createElement("h3")
 titulo.innerText=nombres[i]
+
+const score=document.createElement("div")
+score.className="scoreLive"
+score.innerText="Puntos: "+calcular(expedicionesJugador[i])
 
 const play=document.createElement("div")
 play.className="play-zone"
@@ -137,7 +135,6 @@ const carta=document.createElement("div")
 carta.className="card"
 
 const img=document.createElement("img")
-
 img.src="assets/cards/"+colores[i]+"/"+v+".png"
 
 img.onerror=function(){
@@ -153,6 +150,7 @@ zona.appendChild(carta)
 })
 
 exp.appendChild(titulo)
+exp.appendChild(score)
 exp.appendChild(play)
 exp.appendChild(zona)
 
@@ -171,11 +169,8 @@ if(valor!=="W"){
 let ult=cartas.filter(c=>c!=="W").pop()
 
 if(ult && valor<=ult){
-
 alert("Las cartas deben ir en orden creciente")
-
 return
-
 }
 
 }
@@ -188,6 +183,8 @@ renderizarTablero()
 }
 
 function calcular(cartas){
+
+if(cartas.length===0) return 0
 
 let apuestas=cartas.filter(c=>c==="W").length
 
@@ -211,9 +208,7 @@ for(let i=0;i<expediciones;i++){
 let cartas=expedicionesJugador[i]
 
 if(cartas.length>0){
-
 total+=calcular(cartas)
-
 }
 
 }
@@ -254,16 +249,12 @@ function siguienteRonda(){
 ronda++
 
 if(ronda>3){
-
 mostrarFinal()
 return
-
 }
 
 jugadorActual=0
-
 resetExpediciones()
-
 iniciarTurno()
 
 }
@@ -284,7 +275,7 @@ if(totales[0]>totales[1]) ganador=jugadores[0]
 else if(totales[1]>totales[0]) ganador=jugadores[1]
 else ganador="Empate"
 
-html+="🏆 Gran Explorador: "+ganador
+html+="🏆 Ganador: "+ganador
 
 }
 
@@ -292,10 +283,6 @@ document.getElementById("finalScores").innerHTML=html
 
 mostrar("finalResult")
 
-}
-
-function reiniciar(){
-location.reload()
 }
 
 if("serviceWorker" in navigator){

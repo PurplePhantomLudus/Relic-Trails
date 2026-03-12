@@ -45,16 +45,12 @@ border-radius:6px;
 border:none;
 }
 
-/* tablero */
-
 #board{
 display:flex;
 flex-direction:column;
 gap:18px;
 margin-top:20px;
 }
-
-/* expedicion */
 
 .expedition{
 padding:14px;
@@ -69,10 +65,14 @@ border-radius:12px;
 .expedition.purple{background:#581c87;}
 
 .expedition h3{
-margin:0 0 10px 0;
+margin:0 0 8px 0;
 }
 
-/* zona jugada */
+.scoreLive{
+font-size:14px;
+margin-bottom:8px;
+opacity:.9;
+}
 
 .play-zone{
 display:flex;
@@ -82,16 +82,12 @@ min-height:90px;
 margin-bottom:10px;
 }
 
-/* cartas disponibles */
-
 .cards{
 display:flex;
 flex-wrap:wrap;
 justify-content:center;
 gap:8px;
 }
-
-/* carta */
 
 .card{
 width:70px;
@@ -103,11 +99,6 @@ align-items:center;
 justify-content:center;
 cursor:pointer;
 box-shadow:0 6px 12px rgba(0,0,0,0.4);
-transition:transform .15s;
-}
-
-.card:hover{
-transform:scale(1.05);
 }
 
 .card img{
@@ -117,17 +108,8 @@ object-fit:cover;
 border-radius:10px;
 }
 
-.card.selected{
-outline:4px solid #facc15;
-}
-
 .card.played{
 outline:3px solid #22c55e;
-}
-
-.card.blocked{
-opacity:.25;
-pointer-events:none;
 }
 
 @media (max-width:600px){
