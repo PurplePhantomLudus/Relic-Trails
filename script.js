@@ -4,14 +4,15 @@ let ronda = 1;
 let expediciones = 5;
 
 let totales = [0, 0];
-let expedicionesJugador = {};
+// Ahora guardamos las cartas de los dos jugadores por separado
+// Índice 0 para el Jugador 1, Índice 1 para el Jugador 2
+let cartasJugadas = [{}, {}]; 
 
 const colores = ["red", "blue", "green", "yellow", "white", "purple"];
 const nombres = ["Volcán", "Océano", "Selva", "Desierto", "Hielo", "Misterio"];
 const valores = ["W", "W", "W", 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Es mejor usar getElementById para evitar problemas de compatibilidad
     document.getElementById("btnContinue").onclick = () => mostrar("setup");
     document.getElementById("btnStart").onclick = iniciarJuego;
     document.getElementById("btnFinishTurn").onclick = terminarTurno;
@@ -41,9 +42,11 @@ function iniciarJuego() {
 }
 
 function resetRonda() {
-    expedicionesJugador = {};
-    for (let i = 0; i < expediciones; i++) {
-        expedicionesJugador[i] = [];
+    cartasJugadas = [{}, {}];
+    for (let j = 0; j < 2; j++) {
+        for (let i = 0; i < expediciones; i++) {
+            cartasJugadas[j][i] = [];
+        }
     }
 }
 
@@ -69,21 +72,20 @@ function renderizarTablero() {
         const score = document.createElement("div");
         score.className = "scoreLive";
 
-        let puntos = calcular(expedicionesJugador[i]);
+        let puntos = calcular(cartasJugadas[jugadorActual][i]);
         score.innerText = "Puntos expedición: " + puntos;
         totalTurno += puntos;
 
         const play = document.createElement("div");
         play.className = "play-zone";
 
-        // Muestra las cartas jugadas
-        expedicionesJugador[i].forEach((c, index) => {
+        // Mostrar cartas en la expedición del jugador actual
+        cartasJugadas[jugadorActual][i].forEach((c, index) => {
             const carta = document.createElement("div");
             carta.className = "card played";
             carta.style.backgroundImage = c === "W" ? "url(assets/cards/wager.png)" : "url(assets/cards/" + colores[i] + ".png)";
             carta.innerHTML = "<div class='cardValue'>" + c + "</div>";
             
-            // Si el jugador se equivoca, puede hacer clic en la carta jugada para quitarla
             carta.onclick = () => quitarCarta(i, index);
             
             play.appendChild(carta);
@@ -92,14 +94,22 @@ function renderizarTablero() {
         const zona = document.createElement("div");
         zona.className = "cards";
 
-        // Calcula qué cartas quedan disponibles
+        // REGLA CLAVE: Las cartas disponibles son la baraja menos las que tiene el J1 y el J2
         let disponibles = [...valores];
-        expedicionesJugador[i].forEach(jugada => {
+        
+        // Restamos las del Jugador 1
+        cartasJugadas[0][i].forEach(jugada => {
+            let idx = disponibles.indexOf(jugada);
+            if (idx !== -1) disponibles.splice(idx, 1);
+        });
+        
+        // Restamos las del Jugador 2
+        cartasJugadas[1][i].forEach(jugada => {
             let idx = disponibles.indexOf(jugada);
             if (idx !== -1) disponibles.splice(idx, 1);
         });
 
-        // Muestra las cartas disponibles
+        // Mostrar las cartas que siguen libres en la baraja
         disponibles.forEach(v => {
             const carta = document.createElement("div");
             carta.className = "card";
@@ -126,19 +136,17 @@ function renderizarTablero() {
 }
 
 function jugarCarta(exp, valor) {
-    let cartas = expedicionesJugador[exp];
+    let cartas = cartasJugadas[jugadorActual][exp];
 
     if (valor !== "W") {
         let numCards = cartas.filter(c => c !== "W");
         let ult = numCards.length > 0 ? numCards[numCards.length - 1] : null;
         
-        // Convertimos a Number para evitar que "10" sea evaluado como menor que "9"
         if (ult && Number(valor) <= Number(ult)) {
             alert("Las cartas deben ir en orden creciente.");
             return;
         }
     } else {
-        // Regla: No puedes jugar una apuesta si ya hay números
         if (cartas.some(c => c !== "W")) {
             alert("No puedes jugar un contrato de apuesta después de una carta numérica.");
             return;
@@ -150,8 +158,7 @@ function jugarCarta(exp, valor) {
 }
 
 function quitarCarta(exp, index) {
-    // Permite al jugador retirar una carta si se ha equivocado calculando
-    expedicionesJugador[exp].splice(index, 1);
+    cartasJugadas[jugadorActual][exp].splice(index, 1);
     renderizarTablero();
 }
 
@@ -171,16 +178,16 @@ function calcular(cartas) {
 function terminarTurno() {
     let total = 0;
     for (let i = 0; i < expediciones; i++) {
-        if (expedicionesJugador[i].length > 0) {
-            total += calcular(expedicionesJugador[i]);
+        if (cartasJugadas[jugadorActual][i].length > 0) {
+            total += calcular(cartasJugadas[jugadorActual][i]);
         }
     }
 
     totales[jugadorActual] += total;
 
+    // Pasamos al Jugador 2 pero NO reseteamos la ronda
     if (jugadores.length === 2 && jugadorActual === 0) {
         jugadorActual = 1;
-        resetRonda();
         iniciarTurno();
         return;
     }
@@ -225,8 +232,6 @@ function mostrarFinal() {
     mostrar("finalResult");
 }
 
-// Registro del Service Worker
 if ("serviceWorker" in navigator) {
-    // Cambiado para que apunte al nombre correcto de tu archivo ("sw.js")
     navigator.serviceWorker.register("sw.js");
 }
