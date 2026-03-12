@@ -1,13 +1,15 @@
 body{
 font-family:system-ui;
-background:#101010;
+background:#0f172a;
 color:white;
-text-align:center;
 margin:0;
+text-align:center;
 }
 
 .screen{
 padding:20px;
+max-width:900px;
+margin:auto;
 }
 
 .hidden{
@@ -15,93 +17,124 @@ display:none;
 }
 
 .welcome{
-width:80%;
+width:90%;
 max-width:420px;
+border-radius:14px;
 }
 
 button{
-padding:14px 22px;
-font-size:18px;
+background:#f59e0b;
 border:none;
+padding:14px 22px;
 border-radius:10px;
-background:#ff9800;
+font-size:18px;
 color:white;
 cursor:pointer;
 margin-top:20px;
 }
 
 button:hover{
-background:#ffa726;
+background:#fbbf24;
 }
 
 input,select{
 padding:10px;
-margin:10px;
+margin:8px;
 font-size:16px;
+border-radius:6px;
+border:none;
 }
+
+/* tablero */
 
 #board{
 display:flex;
 flex-direction:column;
-gap:20px;
+gap:18px;
 margin-top:20px;
 }
 
+/* expedicion */
+
 .expedition{
-padding:10px;
-border-radius:10px;
+padding:14px;
+border-radius:12px;
 }
 
-.expedition.red{background:#5c1d1d;}
-.expedition.blue{background:#1d3557;}
-.expedition.green{background:#1b4332;}
-.expedition.yellow{background:#6b4f00;}
-.expedition.white{background:#555;}
-.expedition.purple{background:#4a2c5a;}
+.expedition.red{background:#7f1d1d;}
+.expedition.blue{background:#1e3a8a;}
+.expedition.green{background:#14532d;}
+.expedition.yellow{background:#854d0e;}
+.expedition.white{background:#4b5563;}
+.expedition.purple{background:#581c87;}
 
-.expedition-zone{
+.expedition h3{
+margin:0 0 10px 0;
+}
+
+/* zona jugada */
+
+.play-zone{
 display:flex;
 gap:6px;
+justify-content:center;
 min-height:90px;
-padding:10px;
-border:2px dashed rgba(255,255,255,0.3);
-margin-top:10px;
+margin-bottom:10px;
 }
 
-.hand{
+/* cartas disponibles */
+
+.cards{
 display:flex;
 flex-wrap:wrap;
 justify-content:center;
 gap:8px;
-margin-top:20px;
 }
 
+/* carta */
+
 .card{
-width:60px;
-height:80px;
-background:#222;
+width:70px;
+height:100px;
+background:#1f2937;
+border-radius:10px;
 display:flex;
 align-items:center;
 justify-content:center;
-border-radius:6px;
 cursor:pointer;
-font-weight:bold;
+box-shadow:0 6px 12px rgba(0,0,0,0.4);
+transition:transform .15s;
+}
+
+.card:hover{
+transform:scale(1.05);
 }
 
 .card img{
 width:100%;
-border-radius:6px;
+height:100%;
+object-fit:cover;
+border-radius:10px;
 }
 
-.card.dragging{
-opacity:0.5;
+.card.selected{
+outline:4px solid #facc15;
 }
 
 .card.played{
-outline:3px solid gold;
+outline:3px solid #22c55e;
 }
 
 .card.blocked{
-opacity:0.3;
+opacity:.25;
 pointer-events:none;
+}
+
+@media (max-width:600px){
+
+.card{
+width:60px;
+height:85px;
+}
+
 }

@@ -6,11 +6,11 @@ let expediciones=5
 let totales=[0,0]
 
 let expedicionesJugador={}
-let cartasBloqueadas={}
+let cartasUsadas={}
 
 const colores=["red","blue","green","yellow","white","purple"]
 
-const nombresExpedicion=[
+const nombres=[
 "Volcán",
 "Océano",
 "Selva",
@@ -24,19 +24,19 @@ const valores=["W","W","W",2,3,4,5,6,7,8,9,10]
 document.addEventListener("DOMContentLoaded",()=>{
 
 document.getElementById("btnContinue")
-.addEventListener("click",()=>mostrar("setup"))
+.onclick=()=>mostrar("setup")
 
 document.getElementById("btnStart")
-.addEventListener("click",iniciarJuego)
+.onclick=iniciarJuego
 
 document.getElementById("btnFinishTurn")
-.addEventListener("click",terminarTurno)
+.onclick=terminarTurno
 
 document.getElementById("btnNextRound")
-.addEventListener("click",siguienteRonda)
+.onclick=siguienteRonda
 
 document.getElementById("btnRestart")
-.addEventListener("click",reiniciar)
+.onclick=reiniciar
 
 })
 
@@ -51,7 +51,7 @@ document.getElementById(id).classList.remove("hidden")
 
 function iniciarJuego(){
 
-const j1=document.getElementById("player1").value || "Explorador 1"
+const j1=document.getElementById("player1").value || "Jugador 1"
 const j2=document.getElementById("player2").value
 
 jugadores=[j1]
@@ -64,9 +64,9 @@ expediciones=parseInt(
 document.getElementById("expeditions").value
 )
 
-jugadorActual=0
-ronda=1
 totales=[0,0]
+ronda=1
+jugadorActual=0
 
 resetExpediciones()
 
@@ -77,12 +77,12 @@ iniciarTurno()
 function resetExpediciones(){
 
 expedicionesJugador={}
-cartasBloqueadas={}
+cartasUsadas={}
 
 for(let i=0;i<expediciones;i++){
 
 expedicionesJugador[i]=[]
-cartasBloqueadas[i]=[]
+cartasUsadas[i]=[]
 
 }
 
@@ -92,11 +92,8 @@ function iniciarTurno(){
 
 renderizarTablero()
 
-document.getElementById("roundTitle").innerText=
-"Ronda "+ronda
-
-document.getElementById("playerTurn").innerText=
-"Turno de "+jugadores[jugadorActual]
+document.getElementById("roundTitle").innerText="Ronda "+ronda
+document.getElementById("playerTurn").innerText="Turno de "+jugadores[jugadorActual]
 
 mostrar("game")
 
@@ -105,6 +102,7 @@ mostrar("game")
 function renderizarTablero(){
 
 const board=document.getElementById("board")
+
 board.innerHTML=""
 
 for(let i=0;i<expediciones;i++){
@@ -113,49 +111,34 @@ const exp=document.createElement("div")
 exp.className="expedition "+colores[i]
 
 const titulo=document.createElement("h3")
-titulo.innerText=nombresExpedicion[i]
+titulo.innerText=nombres[i]
+
+const play=document.createElement("div")
+play.className="play-zone"
+
+expedicionesJugador[i].forEach(c=>{
+
+const carta=document.createElement("div")
+carta.className="card played"
+carta.innerText=c
+
+play.appendChild(carta)
+
+})
 
 const zona=document.createElement("div")
-zona.className="expedition-zone"
-
-zona.dataset.index=i
-
-zona.addEventListener("dragover",e=>e.preventDefault())
-
-zona.addEventListener("drop",soltarCarta)
-
-exp.appendChild(titulo)
-exp.appendChild(zona)
-
-board.appendChild(exp)
-
-}
-
-crearMano()
-
-}
-
-function crearMano(){
-
-const board=document.getElementById("board")
-
-const hand=document.createElement("div")
-hand.className="hand"
+zona.className="cards"
 
 valores.forEach(v=>{
 
-for(let e=0;e<expediciones;e++){
-
-if(cartasBloqueadas[e].includes(v)) continue
+if(cartasUsadas[i].includes(v)) return
 
 const carta=document.createElement("div")
 carta.className="card"
 
-carta.draggable=true
-
 const img=document.createElement("img")
 
-img.src=`assets/cards/${colores[e]}/${v}.png`
+img.src="assets/cards/"+colores[i]+"/"+v+".png"
 
 img.onerror=function(){
 carta.innerText=v
@@ -163,58 +146,31 @@ carta.innerText=v
 
 carta.appendChild(img)
 
-carta.dataset.valor=v
-carta.dataset.expedicion=e
+carta.onclick=()=>jugarCarta(i,v)
 
-carta.addEventListener("dragstart",dragCarta)
-
-hand.appendChild(carta)
-
-}
+zona.appendChild(carta)
 
 })
 
-board.appendChild(hand)
+exp.appendChild(titulo)
+exp.appendChild(play)
+exp.appendChild(zona)
+
+board.appendChild(exp)
 
 }
 
-function dragCarta(e){
-
-e.target.classList.add("dragging")
-
-e.dataTransfer.setData(
-"text",
-JSON.stringify({
-valor:e.target.dataset.valor,
-exp:e.target.dataset.expedicion
-})
-)
-
 }
 
-function soltarCarta(e){
+function jugarCarta(exp,valor){
 
-const data=JSON.parse(
-e.dataTransfer.getData("text")
-)
-
-const expIndex=parseInt(e.currentTarget.dataset.index)
-
-if(expIndex!=data.exp) return
-
-const zona=e.currentTarget
-
-const cartas=expedicionesJugador[expIndex]
-
-let valor=data.valor
+let cartas=expedicionesJugador[exp]
 
 if(valor!=="W"){
 
-valor=parseInt(valor)
+let ult=cartas.filter(c=>c!=="W").pop()
 
-let ultima=cartas.filter(c=>c!=="W").pop()
-
-if(ultima && valor<=ultima){
+if(ult && valor<=ult){
 
 alert("Las cartas deben ir en orden creciente")
 
@@ -225,35 +181,24 @@ return
 }
 
 cartas.push(valor)
-
-cartasBloqueadas[expIndex].push(valor)
-
-const carta=document.createElement("div")
-carta.className="card played"
-
-carta.innerText=valor
-
-zona.appendChild(carta)
+cartasUsadas[exp].push(valor)
 
 renderizarTablero()
 
 }
 
-function calcularExpedicion(cartas){
+function calcular(cartas){
 
 let apuestas=cartas.filter(c=>c==="W").length
 
-let numeros=cartas
-.filter(c=>c!=="W")
+let nums=cartas.filter(c=>c!=="W")
 .reduce((a,b)=>a+Number(b),0)
 
-let puntos=(numeros-20)*(apuestas+1)
+let score=(nums-20)*(apuestas+1)
 
-if(cartas.length>=8){
-puntos+=20
-}
+if(cartas.length>=8) score+=20
 
-return puntos
+return score
 
 }
 
@@ -267,7 +212,7 @@ let cartas=expedicionesJugador[i]
 
 if(cartas.length>0){
 
-total+=calcularExpedicion(cartas)
+total+=calcular(cartas)
 
 }
 
@@ -311,7 +256,6 @@ ronda++
 if(ronda>3){
 
 mostrarFinal()
-
 return
 
 }
