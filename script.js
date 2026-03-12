@@ -1,130 +1,532 @@
-// Estado global de la aplicación (Corregido)
-let players = [];
-let currentPlayer = 0;
-let round = 1;
-let numExp = 5;
-let totals = ;      // Puntos totales acumulados
-let roundScores = ; // Puntos de la ronda actual
+let players=[]
+let currentPlayer=0
+let round=1
+let expeditions=5
 
-// Datos basados en las fuentes [2]
-const expNames = ["Arenas del Desierto", "Reinos de Neptuno", "Himalaya", "Selva de Brasil", "Míticos Volcanes", "Abismo Púrpura"];
-const expColors = ["yellow", "blue", "white", "green", "red", "purple"];
-const cardValues = ["W", "W", "W", 2, 3, 4, 5, 6, 7, 8, 9, 10];
+let totals=[0,0]
+let roundScores=[0,0]
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Vinculación de botones con los IDs de tu index.html
-    document.getElementById("btnContinue").onclick = () => show("setup");
-    document.getElementById("btnStart").onclick = startGame;
-    document.getElementById("btnFinishTurn").onclick = finishTurn;
-    document.getElementById("btnNextRound").onclick = nextRound;
-    document.getElementById("btnRestart").onclick = () => location.reload();
-});
+const expeditionColors=[
+"red","blue","green","yellow","white","purple"
+]
 
-function show(id) {
-    document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
-    document.getElementById(id).classList.remove("hidden");
+const expeditionNames=[
+"Volcano","Ocean","Jungle","Desert","Ice","Mystic"
+]
+
+const values=["W","W","W",2,3,4,5,6,7,8,9,10]
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+loadGame()
+
+document.getElementById("btnContinue")
+.addEventListener("click",()=>show("setup"))
+
+document.getElementById("btnStart")
+.addEventListener("click",startGame)
+
+document.getElementById("btnFinishTurn")
+.addEventListener("click",finishTurn)
+
+document.getElementById("btnNextRound")
+.addEventListener("click",nextRound)
+
+document.getElementById("btnRestart")
+.addEventListener("click",restart)
+
+})
+
+function show(id){
+document.querySelectorAll(".screen")
+.forEach(s=>s.classList.add("hidden"))
+
+document.getElementById(id).classList.remove("hidden")
 }
 
-function startGame() {
-    const p1 = document.getElementById("player1").value || "Explorador 1";
-    const p2 = document.getElementById("player2").value || "Explorador 2";
-    players = [p1, p2];
-    numExp = parseInt(document.getElementById("expeditions").value);
-    round = 1;
-    totals = ;
-    startTurn();
+function startGame(){
+
+const p1=document.getElementById("player1").value||"Explorer 1"
+const p2=document.getElementById("player2").value
+
+players=[p1]
+
+if(p2.trim()!==""){
+players.push(p2)
 }
 
-function startTurn() {
-    renderBoard();
-    document.getElementById("roundTitle").innerText = "Ronda " + round + " de 3";
-    document.getElementById("playerTurn").innerText = "Turno: " + players[currentPlayer];
-    window.scrollTo(0, 0);
-    show("game");
+expeditions=parseInt(
+document.getElementById("expeditions").value
+)
+
+round=1
+totals=[0,0]
+roundScores=[0,0]
+currentPlayer=0
+
+saveGame()
+
+startTurn()
+
 }
 
-function renderBoard() {
-    const board = document.getElementById("board");
-    board.innerHTML = "";
-    for (let i = 0; i < numExp; i++) {
-        const expDiv = document.createElement("div");
-        expDiv.className = `expedition ${expColors[i]}`;
-        expDiv.innerHTML = `
-            <div class="exp-header" style="display: flex; align-items: center; gap: 15px; margin-bottom:10px;">
-                <img src="assets/expeditions/${expColors[i]}.png" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #d4af37; object-fit: cover;">
-                <strong>${expNames[i]}</strong>
-            </div>`;
-        const pool = document.createElement("div");
-        pool.className = "card-pool";
-        cardValues.forEach(v => {
-            const c = document.createElement("div");
-            c.className = "game-card";
-            if (v === "W") {
-                c.innerHTML = `<img src="assets/expeditions/wager.png" style="width: 70%;" alt="Inversión">`;
-                c.dataset.val = "W";
-            } else {
-                c.innerText = v;
-                c.dataset.val = v;
-            }
-            c.onclick = () => c.classList.toggle("selected");
-            pool.appendChild(c);
-        });
-        expDiv.appendChild(pool);
-        board.appendChild(expDiv);
-    }
+function startTurn(){
+
+renderBoard()
+
+document.getElementById("roundTitle").innerText=
+"Round "+round
+
+document.getElementById("playerTurn").innerText=
+"Turn: "+players[currentPlayer]
+
+show("game")
+
 }
 
-function calculateExpScore(selectedCards) {
-    if (selectedCards.length === 0) return 0;
-    const wagers = selectedCards.filter(c => c === "W").length;
-    const sum = selectedCards.filter(c => c !== "W").reduce((a, b) => a + Number(b), 0);
-    // Regla oficial: (Suma - 20) * (1 + Inversiones) [1]
-    let score = (sum - 20) * (wagers + 1);
-    // Regla oficial: Bono de 8+ cartas [1]
-    if (selectedCards.length >= 8) score += 20;
-    return score;
+function renderBoard(){
+
+const board=document.getElementById("board")
+
+board.innerHTML=""
+
+for(let i=0;i<expeditions;i++){
+
+const exp=document.createElement("div")
+
+exp.className="expedition "+expeditionColors[i]
+
+const title=document.createElement("h3")
+title.innerText=expeditionNames[i]
+
+exp.appendChild(title)
+
+const cardArea=document.createElement("div")
+cardArea.className="cards"
+
+values.forEach(v=>{
+
+const card=document.createElement("div")
+card.className="card"
+card.innerText=v
+
+card.addEventListener("click",()=>{
+card.classList.toggle("selected")
+})
+
+cardArea.appendChild(card)
+
+})
+
+exp.appendChild(cardArea)
+
+board.appendChild(exp)
+
 }
 
-function finishTurn() {
-    let total = 0;
-    document.querySelectorAll(".expedition").forEach(exp => {
-        const selected = [...exp.querySelectorAll(".selected")].map(c => c.dataset.val);
-        total += calculateExpScore(selected);
-    });
-    roundScores[currentPlayer] = total;
-    if (currentPlayer === 0) {
-        currentPlayer = 1;
-        startTurn();
-    } else {
-        showRoundResults();
-    }
 }
 
-function showRoundResults() {
-    totals += roundScores;
-    totals[2] += roundScores[2];
-    document.getElementById("roundScores").innerHTML = `
-        <p>${players}: ${roundScores} PV</p>
-        <p>${players[2]}: ${roundScores[2]} PV</p>`;
-    show("roundResult");
+function calculateExpedition(cards){
+
+let wagers=cards.filter(c=>c==="W").length
+
+let numbers=cards
+.filter(c=>c!=="W")
+.reduce((a,b)=>a+Number(b),0)
+
+let score=(numbers-20)*(wagers+1)
+
+if(cards.length>=8){
+score+=20
 }
 
-function nextRound() {
-    if (round < 3) {
-        round++;
-        currentPlayer = 0;
-        roundScores = ;
-        startTurn();
-    } else {
-        showFinal();
-    }
+return score
+
 }
 
-function showFinal() {
-    const winner = totals > totals[2] ? players : (totals[2] > totals ? players[2] : "Empate");
-    document.getElementById("finalScores").innerHTML = `
-        <h2>🏆 Ganador: ${winner}</h2>
-        <p>${players}: ${totals} PV Totales</p>
-        <p>${players[2]}: ${totals[2]} PV Totales</p>`;
-    show("finalResult");
+function finishTurn(){
+
+if(!confirm("Finish selecting cards?")){
+return
+}
+
+let expeditionEls=document.querySelectorAll(".cards")
+
+let total=0
+
+expeditionEls.forEach(exp=>{
+
+let cards=[...exp.querySelectorAll(".selected")]
+.map(c=>c.innerText)
+
+if(cards.length>0){
+total+=calculateExpedition(cards)
+}
+
+})
+
+roundScores[currentPlayer]=total
+
+if(players.length===2 && currentPlayer===0){
+
+currentPlayer=1
+saveGame()
+startTurn()
+return
+
+}
+
+showRoundResult()
+
+}
+
+function showRoundResult(){
+
+totals[0]+=roundScores[0]
+
+if(players.length===2){
+totals[1]+=roundScores[1]
+}
+
+let html=""
+
+html+=players[0]+" : "+roundScores[0]+"<br>"
+
+if(players.length===2){
+html+=players[1]+" : "+roundScores[1]+"<br>"
+}
+
+document.getElementById("roundScores").innerHTML=html
+
+show("roundResult")
+
+saveGame()
+
+}
+
+function nextRound(){
+
+round++
+roundScores=[0,0]
+currentPlayer=0
+
+if(round>3){
+showFinal()
+return
+}
+
+saveGame()
+
+startTurn()
+
+}
+
+function showFinal(){
+
+let html=""
+
+html+=players[0]+" : "+totals[0]+"<br>"
+
+if(players.length===2){
+
+html+=players[1]+" : "+totals[1]+"<br><br>"
+
+let winner
+
+if(totals[0]>totals[1]) winner=players[0]
+else if(totals[1]>totals[0]) winner=players[1]
+else winner="Tie"
+
+html+="🏆 Greatest Explorer: "+winner
+
+}
+
+document.getElementById("finalScores").innerHTML=html
+
+show("finalResult")
+
+localStorage.removeItem("relicTrailsGame")
+
+}
+
+function restart(){
+localStorage.removeItem("relicTrailsGame")
+location.reload()
+}
+
+function saveGame(){
+
+const state={
+players,
+currentPlayer,
+round,
+totals,
+roundScores,
+expeditions
+}
+
+localStorage.setItem(
+"relicTrailsGame",
+JSON.stringify(state)
+)
+
+}
+
+function loadGame(){
+
+const saved=localStorage.getItem("relicTrailsGame")
+
+if(!saved) return
+
+const state=JSON.parse(saved)
+
+players=state.players
+currentPlayer=state.currentPlayer
+round=state.round
+totals=state.totals
+roundScores=state.roundScores
+expeditions=state.expeditions
+
+startTurn()
+
+}
+
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js")
+}
+
+function startGame(){
+
+const p1 = document.getElementById("player1").value || "Explorer 1"
+const p2 = document.getElementById("player2").value
+
+players = [p1]
+
+if(p2.trim() !== ""){
+players.push(p2)
+}
+
+expeditions = parseInt(
+document.getElementById("expeditions").value
+)
+
+round = 1
+currentPlayer = 0
+
+totals = [0,0]
+roundScores = [0,0]
+
+startTurn()
+
+}
+
+function startTurn(){
+
+renderBoard()
+
+document.getElementById("roundTitle").innerText =
+"Round " + round
+
+document.getElementById("playerTurn").innerText =
+"Turn: " + players[currentPlayer]
+
+show("game")
+
+}
+
+function renderBoard(){
+
+const board = document.getElementById("board")
+
+board.innerHTML = ""
+
+for(let i=0;i<expeditions;i++){
+
+const exp = document.createElement("div")
+
+exp.className = "expedition"
+
+const title = document.createElement("h4")
+title.innerText = expeditionNames[i]
+
+exp.appendChild(title)
+
+values.forEach(v=>{
+
+const card = document.createElement("div")
+
+card.className = "card"
+
+card.innerText = v
+
+card.addEventListener("click",()=>{
+card.classList.toggle("selected")
+})
+
+exp.appendChild(card)
+
+})
+
+board.appendChild(exp)
+
+}
+
+}
+
+function calculateExpedition(cards){
+
+let wagers = cards.filter(c=>c==="W").length
+
+let numbers = cards
+.filter(c=>c!=="W")
+.reduce((a,b)=>a + Number(b),0)
+
+let score = (numbers - 20) * (wagers + 1)
+
+if(cards.length >= 8){
+score += 20
+}
+
+return score
+
+}
+
+function finishTurn(){
+
+if(!confirm("Are you sure you finished selecting cards?")){
+return
+}
+
+let expeditionEls =
+document.querySelectorAll(".expedition")
+
+let total = 0
+
+let detailHTML = ""
+
+expeditionEls.forEach((exp,i)=>{
+
+let cards =
+[...exp.querySelectorAll(".selected")]
+.map(c=>c.innerText)
+
+let score = 0
+
+if(cards.length>0){
+score = calculateExpedition(cards)
+}
+
+total += score
+
+detailHTML +=
+`<p>${expeditionNames[i]}: ${score}</p>`
+
+})
+
+roundScores[currentPlayer] = total
+
+if(players.length===2 && currentPlayer===0){
+
+currentPlayer = 1
+startTurn()
+
+return
+
+}
+
+showRoundResult(detailHTML)
+
+}
+
+function showRoundResult(details){
+
+totals[0] += roundScores[0]
+
+if(players.length===2){
+totals[1] += roundScores[1]
+}
+
+let html = ""
+
+html += `<h3>${players[0]}</h3>`
+html += `<p>Round Score: ${roundScores[0]}</p>`
+
+if(players.length===2){
+
+html += `<h3>${players[1]}</h3>`
+html += `<p>Round Score: ${roundScores[1]}</p>`
+
+}
+
+html += "<hr>"
+html += details
+
+document.getElementById("roundScores").innerHTML = html
+
+show("roundResult")
+
+}
+
+function nextRound(){
+
+round++
+
+roundScores = [0,0]
+
+currentPlayer = 0
+
+if(round > 3){
+
+showFinal()
+
+return
+
+}
+
+startTurn()
+
+}
+
+function showFinal(){
+
+let html = ""
+
+html += `<p>${players[0]}: ${totals[0]}</p>`
+
+if(players.length===2){
+
+html += `<p>${players[1]}: ${totals[1]}</p>`
+
+let winner
+
+if(totals[0] > totals[1]){
+winner = players[0]
+}
+else if(totals[1] > totals[0]){
+winner = players[1]
+}
+else{
+winner = "Tie"
+}
+
+html += `<h2>🏆 Greatest Explorer: ${winner}</h2>`
+
+}
+
+document.getElementById("finalScores").innerHTML = html
+
+show("finalResult")
+
+}
+
+function restart(){
+
+location.reload()
+
+}
+
+if("serviceWorker" in navigator){
+
+navigator.serviceWorker.register("service-worker.js")
+
 }
